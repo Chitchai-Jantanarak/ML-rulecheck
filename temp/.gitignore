@@ -1,4 +1,0 @@
-model
-model/bert_model_rule_violation/model.safetensors
-
-!model/utils/*

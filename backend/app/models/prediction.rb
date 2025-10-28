@@ -1,0 +1,40 @@
+class Prediction < ApplicationRecord
+    belongs_to :available_model
+
+    validates :input_text,  presence: true
+    validates :rules,       presence: true
+  
+    enum status: {
+        pending:    'pending',
+        processing: 'processing',
+        completed:  'completed',
+        failed:     'failed'
+    }, _prefix: true
+
+    scope :recent, -> { order(created_at: :desc) }
+
+    def execute!
+        update!(status: 'processing')
+
+        begin
+            result = PythonExecutorService.call(
+                script_path:        available_model.python_script_path,
+                input_text:         input_text,
+                rules:              rules
+            )
+
+            update!(
+                status:             'completed',
+                prediction_result:  result,
+                confidence_score:   result['confidence'],
+                is_compliant:       result['is_compliant']
+            )
+        rescue => e
+            update!(
+                status:             'failed',
+                error_message:      e.message
+            )
+            raise
+        end
+    end
+end
