@@ -18,7 +18,7 @@ class Prediction < ApplicationRecord
 
         begin
             result = PythonExecutorService.call(
-                script_path:        available_model.python_script_path,
+                model_name:         available_model.name,
                 input_text:         input_text,
                 rules:              rules
             )

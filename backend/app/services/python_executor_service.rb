@@ -1,12 +1,13 @@
 class PythonExecutorService
   class PythonExecutionError < StandardError; end
 
-  def self.call(script_path:, input_text:, rules:)
-    new(script_path, input_text, rules).execute
+  def self.call(model_name:, input_text:, rules:)
+    new(model_name, input_text, rules).execute
   end
 
-  def initialize(script_path, input_text, rules)
-    @script_path = Rails.root.join(script_path)
+  def initialize(model_name, input_text, rules)
+    @model_name  = model_name
+    @dispatcher_script_path = Rails.root.join('ml_models', 'dispatcher.py')
     @input_text  = input_text
     @rules       = rules
   end
@@ -22,7 +23,7 @@ class PythonExecutorService
 
     begin
       File.write(temp_input.path, input_data.to_json)
-      command = build_command(temp_input.path, temp_output.path)
+      command = build_command(@model_name, temp_input.path, temp_output.path)
       _stdout, stderr, status = Open3.capture3(command)
 
       unless status.success?
@@ -48,9 +49,9 @@ class PythonExecutorService
 
   private
 
-  def build_command(input_path, output_path)
+  def build_command(model_name, input_path, output_path)
     python_bin = ENV['PYTHON_PATH'] || 'python3'
-    "#{python_bin} #{@script_path} #{input_path} #{output_path}"
+    "#{python_bin} #{@dispatcher_script_path} #{model_name} #{input_path} #{output_path}"
   end
 
   def validate_result!(result)

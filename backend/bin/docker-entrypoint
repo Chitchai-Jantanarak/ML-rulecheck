@@ -1,5 +1,17 @@
 #!/bin/bash -e
 
+# Define paths for model merging
+FRAGMENT_DIR="/rails/ml_models/artifacts"
+MERGED_MODEL_PATH="/rails/ml_models/bert_model.bin"
+
+# Merge model fragments if the final model doesn't exist
+if [ ! -f "$MERGED_MODEL_PATH" ]; then
+  echo "Merging model fragments..."
+  python3 /rails/ml_models/merge_model.py "$FRAGMENT_DIR" "$MERGED_MODEL_PATH"
+else
+  echo "Merged model already exists. Skipping merge."
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
