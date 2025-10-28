@@ -1,0 +1,11 @@
+    # .devcontainer/docker-compose.yml example for PostgreSQL
+    version: '3.8'
+    services:
+      db:
+        image: postgres:13
+        environment:
+          POSTGRES_DB: mydb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+        ports:
+          - "5432:5432"
