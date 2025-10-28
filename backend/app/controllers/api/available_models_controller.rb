@@ -46,9 +46,11 @@ module Api
 
       private
 
-      def prediction_params
-        params.require(:prediction).permit(:available_model_id, :input_text, :rules)
-      end
+      def prediction_params                                                                                  
+        params.require(:prediction).permit(:available_model_id, :input_text, :rules)                         
+      rescue ActiveRecord::RecordNotFound                                                                    
+        render json: { error: 'Prediction not found' }, status: :not_found                                   
+      end                                                                                                    
 
       def format_prediction(prediction)
         {
