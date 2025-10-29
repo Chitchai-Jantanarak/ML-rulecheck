@@ -1,16 +1,71 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AvailableModel, Prediction, listModels, listPredictions, predictSync } from '@/lib/api/rails-server';
+import {
+  AvailableModel,
+  Prediction,
+  listModels,
+  listPredictions,
+  predictSync
+} from '@/lib/api/rails-server';
+
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle
+}
+  from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+}
+  from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Terminal } from 'lucide-react';
+import { Terminal, FileText, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+
+const EXAMPLES = [
+  {
+    name: "Product Review",
+    icon: MessageSquare,
+    inputText: "This product is absolutely amazing! I've been using it for 3 months and it has completely transformed my workflow. Highly recommend to anyone looking for a quality solution.",
+    rules: "Must not contain profanity\nMust be constructive\nShould provide specific details\nMust be respectful"
+  },
+  {
+    name: "Content Moderation",
+    icon: ShieldCheck,
+    inputText: "Hey everyone! Check out this new opportunity to make money fast! Click the link in my bio and start earning today! No experience needed!",
+    rules: "Must not be spam\nMust not contain promotional links\nMust not make unrealistic claims\nMust provide genuine value"
+  },
+  {
+    name: "Technical Documentation",
+    icon: FileText,
+    inputText: "To configure the API, first obtain your API key from the dashboard. Then, initialize the client with your credentials and make requests using the provided methods.",
+    rules: "Must be clear and concise\nMust include step-by-step instructions\nMust be technically accurate\nShould use proper terminology"
+  }
+];
 
 export default function Home() {
   const [models, setModels] = useState<AvailableModel[]>([]);
@@ -65,6 +120,11 @@ export default function Home() {
     }
   };
 
+  const loadExample = (example: typeof EXAMPLES[0]) => {
+    setInputText(example.inputText);
+    setRules(example.rules);
+  };
+
   return (
     <main className="container mx-auto py-8 px-4">
       <div className="text-center mb-12">
@@ -86,6 +146,31 @@ export default function Home() {
 
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Try an Example</CardTitle>
+              <CardDescription>Load a pre-configured example to get started quickly</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {EXAMPLES.map((example, index) => {
+                  const Icon = example.icon;
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="h-auto py-4 flex flex-col items-center gap-2"
+                      onClick={() => loadExample(example)}
+                    >
+                      <Icon className="h-6 w-6" />
+                      <span className="font-medium">{example.name}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Create a new Prediction</CardTitle>
@@ -147,26 +232,44 @@ export default function Home() {
                     <TableHead>Model</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Compliant</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recentPredictions.length > 0 ? (
-                    recentPredictions.map((prediction) => (
-                      <TableRow key={prediction.id}>
-                        <TableCell className="font-medium">{prediction.model}</TableCell>
-                        <TableCell>
-                          <Badge variant={prediction.status === 'completed' ? 'default' : 'secondary'}>{prediction.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Badge variant={prediction.is_compliant ? 'default' : 'destructive'}>
-                            {prediction.is_compliant ? 'Yes' : 'No'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+                      recentPredictions.map((prediction) => (
+                        <TableRow key={prediction.id}>
+                          <TableCell className="font-medium">{prediction.model}</TableCell>
+                          <TableCell>
+                            <Badge variant={prediction.status === 'completed' ? 'default' : 'secondary'}>
+                              {prediction.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant={prediction.is_compliant ? 'default' : 'destructive'}>
+                              {prediction.is_compliant ? 'Yes' : 'No'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">View Details</Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Prediction Details</DialogTitle>
+                                </DialogHeader>
+                                <pre className="text-sm bg-muted p-4 rounded-lg overflow-auto">
+                                  {JSON.stringify(prediction, null, 2)}
+                                </pre>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">No recent predictions.</TableCell>
+                      <TableCell colSpan={4} className="text-center">No recent predictions.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
