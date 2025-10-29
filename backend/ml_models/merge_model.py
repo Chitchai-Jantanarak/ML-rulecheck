@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # ml_models/merge_model.py
 
 import os
@@ -35,7 +35,7 @@ def merge_files(fragment_dir, output_file, pattern="bert_model.bin.part_*"):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print("Usage: python3 merge_model.py <fragment_directory> <output_file_path>")
+        print("Usage: python merge_model.py <fragment_directory> <output_file_path>")
         sys.exit(1)
     
     fragment_dir = sys.argv[1]

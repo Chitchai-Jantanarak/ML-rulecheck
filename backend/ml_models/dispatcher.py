@@ -2,12 +2,12 @@ import sys
 import json
 
 # Import models to register them
-from .models import bert, gru, ls
+from .callers import bert, gru, ls
 from .registry import MODEL_REGISTRY
 
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python3 dispatcher.py <model_name> <input_file> <output_file>")
+        print("Usage: python dispatcher.py <model_name> <input_file> <output_file>")
         sys.exit(1)
 
     model_name = sys.argv[1]

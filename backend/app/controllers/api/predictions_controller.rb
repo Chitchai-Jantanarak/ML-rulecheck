@@ -37,7 +37,7 @@ module Api
       prediction = Prediction.find(params[:id])
       render json: format_prediction(prediction)
     rescue ActiveRecord::RecordNotFound
-      render json: { error: 'Prediction not found' }, status: :not_found
+      render json: { error: "Prediction not found" }, status: :not_found
     end
 
     private

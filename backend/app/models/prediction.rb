@@ -3,18 +3,18 @@ class Prediction < ApplicationRecord
 
     validates :input_text,  presence: true
     validates :rules,       presence: true
-  
+
     enum status: {
-        pending:    'pending',
-        processing: 'processing',
-        completed:  'completed',
-        failed:     'failed'
+        pending:    "pending",
+        processing: "processing",
+        completed:  "completed",
+        failed:     "failed"
     }, _prefix: true
 
     scope :recent, -> { order(created_at: :desc) }
 
     def execute!
-        update!(status: 'processing')
+        update!(status: "processing")
 
         begin
             result = PythonExecutorService.call(
@@ -24,14 +24,14 @@ class Prediction < ApplicationRecord
             )
 
             update!(
-                status:             'completed',
+                status:             "completed",
                 prediction_result:  result,
-                confidence_score:   result['confidence'],
-                is_compliant:       result['is_compliant']
+                confidence_score:   result["confidence"],
+                is_compliant:       result["is_compliant"]
             )
         rescue => e
             update!(
-                status:             'failed',
+                status:             "failed",
                 error_message:      e.message
             )
             raise

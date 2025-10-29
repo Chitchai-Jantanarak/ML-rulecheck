@@ -9,22 +9,22 @@ class AvailableModel < ApplicationRecord
     def self.seed_models
         models = [
             {
-                name: 'ls',
-                display_name: 'Logistic Regression',
-                python_script_path: 'ml_models/ls_model.py'
+                name: "ls",
+                display_name: "Logistic Regression",
+                python_script_path: "ml_models/callers/ls.py"
             },
             {
-                name: 'gru',
-                display_name: 'GRU (Gated Recurrent Unit)',
-                python_script_path: 'ml_models/gru_model.py'
+                name: "gru",
+                display_name: "GRU (Gated Recurrent Unit)",
+                python_script_path: "ml_models/callers/gru.py"
             },
             {
-                name: 'bert',
-                display_name: 'BERT',
-                python_script_path: 'ml_models/bert_model.py'
+                name: "bert",
+                display_name: "BERT",
+                python_script_path: "ml_models/callers/bert.py"
             }
         ]
-        
+
         models.each do |model_attrs|
             find_or_create_by(name: model_attrs[:name]) do |model|
                 model.assign_attributes(model_attrs)

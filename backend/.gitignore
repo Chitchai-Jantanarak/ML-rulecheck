@@ -31,4 +31,5 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-/ml_models/artifacts
+/ml_models/model
+__pycache__
