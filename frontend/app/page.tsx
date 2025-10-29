@@ -127,11 +127,8 @@ export default function Home() {
     <main className="container mx-auto py-8 px-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-          ML Rule Check
+          Rule Compliance Classifier
         </h1>
-        <p className="mt-3 text-lg text-muted-foreground">
-          A simple interface to test and verify machine learning model compliance with a given set of rules.
-        </p>
       </div>
 
       {error && (
@@ -146,8 +143,7 @@ export default function Home() {
         <div className="lg:col-span-3">
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Try an Example</CardTitle>
-              <CardDescription>Load a pre-configured example to get started quickly</CardDescription>
+              <CardTitle>Example inputs</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
