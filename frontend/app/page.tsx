@@ -2,6 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { AvailableModel, Prediction, listModels, listPredictions, predictSync } from '@/lib/api/rails-server';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Terminal } from 'lucide-react';
 
 export default function Home() {
   const [models, setModels] = useState<AvailableModel[]>([]);
@@ -57,67 +66,115 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center gap-8 bg-white py-16 px-8 dark:bg-black sm:items-start">
-        <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+    <main className="container mx-auto py-8 px-4">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
           ML Rule Check
         </h1>
+        <p className="mt-3 text-lg text-muted-foreground">
+          A simple interface to test and verify machine learning model compliance with a given set of rules.
+        </p>
+      </div>
 
-        {error && (
-          <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Error:</strong>
-            <span className="block sm:inline"> {error}</span>
-          </div>
-        )}
+      {error && (
+        <Alert variant="destructive" className="mb-8">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <div className="w-full">
-          <h2 className="text-xl font-semibold mb-4">Create a new Prediction</h2>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label htmlFor="model" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Available Models</label>
-              <select id="model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                {models.map((model) => (
-                  <option key={model.id} value={model.id}>{model.display_name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="inputText" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Input Text</label>
-              <textarea id="inputText" value={inputText} onChange={(e) => setInputText(e.target.value)} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
-            </div>
-            <div>
-              <label htmlFor="rules" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rules</label>
-              <textarea id="rules" value={rules} onChange={(e) => setRules(e.target.value)} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
-            </div>
-            <button type="submit" disabled={isLoading} className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
-              {isLoading ? 'Predicting...' : 'Predict'}
-            </button>
-          </form>
+      <div className="grid gap-8 lg:grid-cols-5">
+        <div className="lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create a new Prediction</CardTitle>
+              <CardDescription>Select a model, provide input, and define rules to check against.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="model">Available Models</Label>
+                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                    <SelectTrigger id="model">
+                      <SelectValue placeholder="Select a model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {models.map((model) => (
+                        <SelectItem key={model.id} value={model.id.toString()}>{model.display_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inputText">Input Text</Label>
+                  <Textarea id="inputText" value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Enter the text to be analyzed." rows={6} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rules">Rules</Label>
+                  <Textarea id="rules" value={rules} onChange={(e) => setRules(e.target.value)} placeholder="Define the rules for the model to check, one per line." rows={6} />
+                </div>
+                <Button type="submit" disabled={isLoading} className="w-full">
+                  {isLoading ? 'Predicting...' : 'Predict'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {predictionResult && (
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Prediction Result</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted p-4 rounded-md">
+                  <pre className="text-sm text-muted-foreground whitespace-pre-wrap">{JSON.stringify(predictionResult, null, 2)}</pre>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {predictionResult && (
-          <div className="w-full">
-            <h2 className="text-xl font-semibold mb-4">Prediction Result</h2>
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-              <pre className="text-sm text-gray-800 dark:text-gray-200">{JSON.stringify(predictionResult, null, 2)}</pre>
-            </div>
-          </div>
-        )}
-
-        <div className="w-full">
-          <h2 className="text-xl font-semibold mb-4">Recent Predictions</h2>
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {recentPredictions.map((prediction) => (
-              <li key={prediction.id} className="py-4">
-                <p><strong>Model:</strong> {prediction.model}</p>
-                <p><strong>Status:</strong> {prediction.status}</p>
-                <p><strong>Compliant:</strong> {prediction.is_compliant ? 'Yes' : 'No'}</p>
-              </li>
-            ))}
-          </ul>
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Predictions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Compliant</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentPredictions.length > 0 ? (
+                    recentPredictions.map((prediction) => (
+                      <TableRow key={prediction.id}>
+                        <TableCell className="font-medium">{prediction.model}</TableCell>
+                        <TableCell>
+                          <Badge variant={prediction.status === 'completed' ? 'default' : 'secondary'}>{prediction.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={prediction.is_compliant ? 'default' : 'destructive'}>
+                            {prediction.is_compliant ? 'Yes' : 'No'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center">No recent predictions.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
-
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
