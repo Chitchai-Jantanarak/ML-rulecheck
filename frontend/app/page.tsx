@@ -1,64 +1,118 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+  const [models, setModels] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [rules, setRules] = useState('');
+  const [predictionResult, setPredictionResult] = useState<any>(null);
+  const [recentPredictions, setRecentPredictions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/linker/available_models')
+      .then((res) => res.json())
+      .then((data) => {
+        setModels(data);
+        if (data.length > 0) {
+          setSelectedModel(data[0].id);
+        }
+      });
+
+    fetch('/api/linker/predictions')
+      .then((res) => res.json())
+      .then((data) => {
+        setRecentPredictions(data);
+      });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setPredictionResult(null);
+
+    const response = await fetch('/api/linker/predictions/predict_sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prediction: {
+          available_model_id: selectedModel,
+          input_text: inputText,
+          rules: rules,
+        },
+      }),
+    });
+
+    const result = await response.json();
+    setPredictionResult(result);
+    setIsLoading(false);
+
+    // Refresh recent predictions
+    fetch('/api/linker/predictions')
+      .then((res) => res.json())
+      .then((data) => {
+        setRecentPredictions(data);
+      });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center gap-8 bg-white py-16 px-8 dark:bg-black sm:items-start">
+        <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+          ML Rule Check
+        </h1>
+
+        <div className="w-full">
+          <h2 className="text-xl font-semibold mb-4">Create a new Prediction</h2>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="model" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Available Models</label>
+              <select id="model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                {models.map((model: any) => (
+                  <option key={model.id} value={model.id}>{model.display_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="inputText" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Input Text</label>
+              <textarea id="inputText" value={inputText} onChange={(e) => setInputText(e.target.value)} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
+            </div>
+            <div>
+              <label htmlFor="rules" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rules</label>
+              <textarea id="rules" value={rules} onChange={(e) => setRules(e.target.value)} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
+            </div>
+            <button type="submit" disabled={isLoading} className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
+              {isLoading ? 'Predicting...' : 'Predict'}
+            </button>
+          </form>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {predictionResult && (
+          <div className="w-full">
+            <h2 className="text-xl font-semibold mb-4">Prediction Result</h2>
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+              <pre className="text-sm text-gray-800 dark:text-gray-200">{JSON.stringify(predictionResult, null, 2)}</pre>
+            </div>
+          </div>
+        )}
+
+        <div className="w-full">
+          <h2 className="text-xl font-semibold mb-4">Recent Predictions</h2>
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            {recentPredictions.map((prediction: any) => (
+              <li key={prediction.id} className="py-4">
+                <p><strong>Model:</strong> {prediction.model}</p>
+                <p><strong>Status:</strong> {prediction.status}</p>
+                <p><strong>Compliant:</strong> {prediction.is_compliant ? 'Yes' : 'No'}</p>
+              </li>
+            ))}
+          </ul>
         </div>
+
       </main>
     </div>
   );
