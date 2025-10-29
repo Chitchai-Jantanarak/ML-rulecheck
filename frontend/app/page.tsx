@@ -13,8 +13,7 @@ import {
   Alert,
   AlertDescription,
   AlertTitle
-}
-  from '@/components/ui/alert';
+} from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -30,8 +29,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue
-}
-  from '@/components/ui/select';
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
