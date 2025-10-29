@@ -1,0 +1,16 @@
+
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: "bert"
+  display_name: "BERT"
+  description: "BERT model for text classification"
+  python_script_path: "ml_models/callers/bert.py"
+  is_active: true
+
+two:
+  name: "gru"
+  display_name: "GRU"
+  description: "GRU model for text classification"
+  python_script_path: "ml_models/callers/gru.py"
+  is_active: false

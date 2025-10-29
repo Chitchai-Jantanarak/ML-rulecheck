@@ -1,0 +1,7 @@
+{
+  "prediction": {
+    "available_model_id": 1,
+    "input_text": "This is a sample text for synchronous prediction.",
+    "rules": "rule_a,rule_b"
+  }
+}

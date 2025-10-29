@@ -7,7 +7,7 @@ import importlib.util
 from ..registry import register_model
 
 def _load_lr_module():
-    lr_path = Path(__file__).parent.parent / "_modeling_lr.py"
+    lr_path = Path(__file__).parent / "_modeling_lr.py"
     if lr_path.exists():
         spec = importlib.util.spec_from_file_location("_modeling_lr", lr_path)
         lr_module = importlib.util.module_from_spec(spec)
@@ -15,7 +15,7 @@ def _load_lr_module():
         spec.loader.exec_module(lr_module)
 
         main_mod = sys.modules["__main__"]
-        for name, val in lr_module,__dict__.items():
+        for name, val in lr_module.__dict__.items():
             if callable(val) or isinstance(val, type):
                 setattr(main_mod, name, val)
         return True

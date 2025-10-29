@@ -9,9 +9,8 @@ class PythonExecutorService
     ).execute
   end
 
-  def initialize(model_name, input_text, rules)
+  def initialize(model_name:, input_text:, rules:)
     @model_name  = model_name
-    @dispatcher_script_path = Rails.root.join("ml_models", "dispatcher.py")
     @input_text  = input_text
     @rules       = rules
   end
@@ -33,13 +32,14 @@ class PythonExecutorService
 
       _stdout, stderr, status = Open3.capture3(command)
 
-      unless status.success?
-          Rails.logger.error("Python execution failed: #{stderr}")
-          raise PythonExecutionError, "Python script failed: #{stderr}"
-      end
-
       output_content = File.read(temp_output.path)
-      result = JSON.parse(output_content)
+      result = JSON.parse(output_content) rescue {}
+
+      unless status.success?
+        error_message = result['error'] || stderr
+        Rails.logger.error("Python execution failed: #{error_message}")
+        raise PythonExecutionError, "Python script failed: #{error_message}"
+      end
 
       validate_result!(result)
       result
@@ -60,7 +60,7 @@ class PythonExecutorService
 
   def build_command(model_name, input_path, output_path)
     python_bin = ENV["PYTHON_PATH"] || "python"
-    "#{python_bin} #{@dispatcher_script_path} #{model_name} #{input_path} #{output_path}"
+    "#{python_bin} -m ml_models #{model_name} #{input_path} #{output_path}"
   end
 
   def validate_result!(result)

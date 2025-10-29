@@ -7,7 +7,7 @@ MERGED_MODEL_PATH="/rails/ml_models/bert_model.bin"
 # Merge model fragments if the final model doesn't exist
 if [ ! -f "$MERGED_MODEL_PATH" ]; then
   echo "Merging model fragments..."
-  python3 /rails/ml_models/merge_model.py "$FRAGMENT_DIR" "$MERGED_MODEL_PATH"
+  python /rails/ml_models/merge_model.py "$FRAGMENT_DIR" "$MERGED_MODEL_PATH"
 else
   echo "Merged model already exists. Skipping merge."
 fi

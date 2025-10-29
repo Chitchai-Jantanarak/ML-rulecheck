@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import re
 from sklearn.base import BaseEstimator, TransformerMixin
 from dataclasses import dataclass
@@ -60,3 +61,9 @@ class RuleContextExtractor(BaseEstimator, TransformerMixin):
                 pos_max-neg_max, pos_avg-neg_avg
             ])
         return np.asarray(feats, dtype=float)
+
+def _select_col(df: pd.DataFrame, col: str):
+    return df[col].fillna("")
+
+def _select_cols(df: pd.DataFrame, cols):
+    return df[cols]

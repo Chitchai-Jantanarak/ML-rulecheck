@@ -18,6 +18,11 @@ module Api
     end
 
     def predict_sync
+      unless AvailableModel.exists?(prediction_params[:available_model_id])
+        render json: { error: "Invalid available_model_id" }, status: :unprocessable_entity
+        return
+      end
+
       prediction = Prediction.new(prediction_params)
 
       if prediction.save

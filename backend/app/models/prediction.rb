@@ -4,12 +4,31 @@ class Prediction < ApplicationRecord
     validates :input_text,  presence: true
     validates :rules,       presence: true
 
-    enum status: {
-        pending:    "pending",
-        processing: "processing",
-        completed:  "completed",
-        failed:     "failed"
-    }, _prefix: true
+    STATUSES = { pending: "pending", processing: "processing", completed: "completed", failed: "failed" }.freeze
+
+    def status
+      super.inquiry
+    end
+
+    def status_pending?
+      status == "pending"
+    end
+
+    def status_processing?
+      status == "processing"
+    end
+
+    def status_completed?
+      status == "completed"
+    end
+
+    def status_failed?
+      status == "failed"
+    end
+
+    def status=(value)
+      super(value)
+    end
 
     scope :recent, -> { order(created_at: :desc) }
 

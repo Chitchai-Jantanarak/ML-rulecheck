@@ -28,7 +28,7 @@ def predict_bert(input_data):
     threshold = meta.get('threshold', 0.5)
     max_len = meta.get('max_len', 512)
     
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(model_dir, use_fast=False)
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
     model.eval()
     
